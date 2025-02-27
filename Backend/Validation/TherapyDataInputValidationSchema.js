@@ -1,7 +1,7 @@
 const Joi = require("joi")
 
 const TherapyDataInputValidationSchema = Joi.object({
-    inputProblem: Joi.string().min(100).required(),
+    inputProblem: Joi.string().min(10).required(),
     approach: Joi.string().valid(
         "Person Centered Therapy",
         "Mindfulness Based Therapy",

@@ -27,7 +27,7 @@ const createUser = async (req, res) => {
         if (user.length === 0) {
             const newUser = new UserDataModel({ Username: Username, Name: Name, Email: Email, Password: hashedPassword,TherapyHistory: [], UserDetails: null });
             const otp = newUser.generateOTP();
-            await sendOTPEmail(Email, otp);
+            // await sendOTPEmail(Email, otp);
             await newUser.save();
             const token = jwt.sign({ id: newUser._id, Username: newUser.Username }, process.env.JWT_SECRET, { expiresIn: '1h' });
             res.status(201).json({ message: "User created successfully", token, data: newUser });
