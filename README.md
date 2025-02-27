@@ -19,7 +19,6 @@ Access to mental health support is often hindered by barriers like cost, stigma,
 - 🏡 **Therapy room environment for a realistic feel**.  
 
 ### **3️⃣ Privacy & Security**
-- 🔒 **Anonymous Mode** (No sign-up required for basic use).  
 - 🔑 **Login for Personalization** (JWT-based authentication).  
 
 ### **4️⃣ Smart Session Summaries**
