@@ -10,9 +10,15 @@ const {
 } = require("./AIModules/getRefinement");
 const port = process.env.PORT || 5001;
 const app = express();
-app.use(express.json());
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://game-verse-new.firebaseapp.com'],
+  methods: 'GET, POST, PATCH, PUT, DELETE',
+  allowedHeaders: 'Content-Type, Authorization, X-Additional-Info',
+  credentials: true,
+}))
 
+app.use(express.json());
 app.route("/").get((req, res) => {
   res.send("This is MindMate AI Backend Route");
 });
