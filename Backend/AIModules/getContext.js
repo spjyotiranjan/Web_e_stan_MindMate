@@ -84,6 +84,36 @@ const getUserSolutionContext = async (globalContext,problem, approach) => {
   }
 };
 
+const getTherapySessionTitle = async (userInput)=>{
+  try {
+    const openaiModel = new ChatOpenAI({
+      modelName: "gpt-4o",
+      temperature: 0.7,
+    });
+
+    const prompt = ChatPromptTemplate.fromTemplate(
+      `Give a appropriate Title for the Problem given. Only give title, no Title declaration as well as no tagline.
+
+      Problem:
+      {problem}
+      `
+    );
+
+    const chain = prompt
+      .pipe(openaiModel)
+      .pipe(new StringOutputParser());
+
+    const res = await chain.invoke({
+      problem: userInput
+    })
+    console.log(res);
+    return res;
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 
 const updateTherapyContext = async (UserPrevProblem,UserPrevSolution,chatHistory) => {
   try {
@@ -172,5 +202,6 @@ const updateUserSolutionContext = async(UserSolution,chatHistory)=>{
 // getTherapyContext("I am suffering from Autism, and it is not the sad part, the sad part is I get bullied because of ti, people make fun of me, dont take me seriously, and I ahave became a clown. I want to fix my autism or atleast get courage to face the bullies.","Solution-Focused Brief Therapy")
 module.exports = {
   getTherapyContext,
-  updateTherapyContext
+  updateTherapyContext,
+  getTherapySessionTitle
 };

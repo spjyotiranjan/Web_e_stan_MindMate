@@ -1,4 +1,9 @@
-const { getTherapyContext,updateTherapyContext } = require("../AIModules/getContext");
+const {
+  getTherapyContext,
+  updateTherapyContext,
+  getTherapySessionTitle,
+} = require("../AIModules/getContext");
+const { getTherapySessionSummary } = require("../AIModules/getSummary");
 const UserDataModel = require("../Schema/UserSchema");
 const TherapyDataInputValidationSchema = require("../Validation/TherapyDataInputValidationSchema");
 const TherapyDataModel = require("./../Schema/TherapySchema");
@@ -63,99 +68,147 @@ const createTherapySession = async (req, res) => {
       const user = userResponse[0];
       if (!user) {
         return res.status(400).json({ message: "Invalid Username" });
-      }else{
-          const globalContext = user.UserDetails;
-          const response = await getTherapyContext(globalContext,inputProblem, approach);
-          const postTherapySession = await TherapyDataModel.create({
-            UserProblem: response.UserProblem,
-            UserSolution: response.UserSolution,
-            Approach: approach,
-            Therapist: therapist,
-            ChatHistory: [],
-            UserId: user._id
-          })
-          await UserDataModel.findOneAndUpdate(
+      } else {
+        const globalContext = user.UserDetails;
+        const response = await getTherapyContext(
+          globalContext,
+          inputProblem,
+          approach
+        );
+        const title = await getTherapySessionTitle(inputProblem)
+        const postTherapySession = await TherapyDataModel.create({
+          Title: title,
+          UserProblem: response.UserProblem,
+          UserSolution: response.UserSolution,
+          Approach: approach,
+          Therapist: therapist,
+          ChatHistory: [],
+          UserId: user._id,
+        });
+        await UserDataModel.findOneAndUpdate(
+          { Username: username },
+          { TherapyHistory: [postTherapySession._id, ...user.TherapyHistory] }
+        );
+        const updatedUser = await UserDataModel.findOne({ Username: username });
 
-            {Username: username},
-            {TherapyHistory: [postTherapySession._id,...user.TherapyHistory]}
-          )
-          const updatedUser = await UserDataModel.findOne({Username: username})
-
-          return res.status(201).json({
-            message: "Therapy Session Created",
-            createdTherapySession: postTherapySession,
-            user: updatedUser
-          })
+        return res.status(201).json({
+          message: "Therapy Session Created",
+          createdTherapySession: postTherapySession,
+          user: updatedUser,
+        });
       }
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Unable to create Therapy Session." });
+    return res
+      .status(500)
+      .json({ message: "Unable to create Therapy Session." });
   }
 };
-const updateTherapyContextController = async (req,res) => {
-  try{
+const updateTherapyContextController = async (req, res) => {
+  try {
     const id = req.params.id;
     const therapySession = await TherapyDataModel.findById(id);
     if (!therapySession) {
       return res.status(404).json({ message: "No Therapy Session Found" });
-    }else{
-      const updatedTherapyContext = await updateTherapyContext(therapySession.UserProblem,therapySession.UserSolution,req.body.ChatHistory)
-      const updatedTherapySession = await TherapyDataModel.findByIdAndUpdate(id,{
-        UserProblem: updatedTherapyContext.UserProblem,
-        UserSolution: updatedTherapyContext.UserSolution,
-        ChatHistory: req.body.ChatHistory
-      })
+    } else {
+      const updatedTherapyContext = await updateTherapyContext(
+        therapySession.UserProblem,
+        therapySession.UserSolution,
+        req.body.ChatHistory
+      );
+      const updatedTherapySession = await TherapyDataModel.findByIdAndUpdate(
+        id,
+        {
+          UserProblem: updatedTherapyContext.UserProblem,
+          UserSolution: updatedTherapyContext.UserSolution,
+          ChatHistory: req.body.ChatHistory,
+        }
+      );
 
-      return res
-        .status(200)
-        .json({
-          message: "Therapy Successfully Updated",
-          updatedTherapySession
-        });
+      return res.status(200).json({
+        message: "Therapy Successfully Updated",
+        updatedTherapySession,
+      });
     }
-  }catch(error){
+  } catch (error) {
     console.log(error);
     return res
       .status(500)
       .json({ message: "Unable to update Therapy Sessions", error });
   }
-}
+};
 
-const getContextController = async(req,res)=>{
+const getContextController = async (req, res) => {
   try {
-    const response = await getTherapyContext(req.body.globalContext,req.body.input, req.body.approach);
+    const response = await getTherapyContext(
+      req.body.globalContext,
+      req.body.input,
+      req.body.approach
+    );
     return res.status(201).json({
-      context: response
-    })
-
+      context: response,
+    });
   } catch (error) {
     return res.status(500).json({
-      error: error
-    })
-  }
-}
-
-const deleteTherapySession = async (req, res) => {
-  try {
-      const deletedTherapySession = await TherapyDataModel.findByIdAndDelete(req.params.id)
-
-      if(!deletedTherapySession){
-          return res.status(404).json({message: "Unable to find the Therapy Sessions"})
-      }else{
-        const userid = deletedTherapySession.UserId
-          const user = await UserDataModel.findById(userid)
-          const updatedPresentationsArr = user.TherapyHistory.filter(e=> !e.equals(deletedTherapySession._id))
-          const updatedUser = await UserDataModel.findByIdAndUpdate(userid,{TherapyHistory: updatedPresentationsArr},{new: true})
-          return res.status(200).json({message: "User deleted Successfully",DeletedTherapySession: deletedTherapySession,UpdatedUser: updatedUser})
-      }
-  } catch (error) {
-    return res
-    .status(500)
-    .json({ message: "Unable to Delete the Therapy Session", Error: error });
+      error: error,
+    });
   }
 };
 
+const deleteTherapySession = async (req, res) => {
+  try {
+    const deletedTherapySession = await TherapyDataModel.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!deletedTherapySession) {
+      return res
+        .status(404)
+        .json({ message: "Unable to find the Therapy Sessions" });
+    } else {
+      const userid = deletedTherapySession.UserId;
+      const user = await UserDataModel.findById(userid);
+      const updatedPresentationsArr = user.TherapyHistory.filter(
+        (e) => !e.equals(deletedTherapySession._id)
+      );
+      const updatedUser = await UserDataModel.findByIdAndUpdate(
+        userid,
+        { TherapyHistory: updatedPresentationsArr },
+        { new: true }
+      );
+      return res
+        .status(200)
+        .json({
+          message: "User deleted Successfully",
+          DeletedTherapySession: deletedTherapySession,
+          UpdatedUser: updatedUser,
+        });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Unable to Delete the Therapy Session", error: error });
+  }
+};
+
+const getTherapySessionSummaryController = async (req, res) => {
+  try {
+    const session = await TherapyDataModel.findById(req.params.id)
+    const summary = await getTherapySessionSummary(session.ChatHistory);
+    return res
+      .status(200)
+      .json({
+        message: "Summary Created Successfully",
+        SessionSummary: summary,
+      });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Unable to create session summary", error });
+  }
+};
 
 module.exports = {
   getAllTherapySessions,
@@ -163,5 +216,6 @@ module.exports = {
   createTherapySession,
   updateTherapyContextController,
   getContextController,
-  deleteTherapySession
+  deleteTherapySession,
+  getTherapySessionSummaryController
 };

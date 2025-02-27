@@ -1,5 +1,5 @@
 const express = require("express");
-const {getAllTherapySessions,getTherapySessionById,createTherapySession,updateTherapyContextController,getContextController, deleteTherapySession, } = require("./../Controller/TherapyDataController")
+const {getAllTherapySessions,getTherapySessionById,createTherapySession,updateTherapyContextController,getContextController, deleteTherapySession, getTherapySessionSummaryController, } = require("./../Controller/TherapyDataController")
 const TherapyRoutes = express.Router();
 
 TherapyRoutes.get("/",getAllTherapySessions)
@@ -8,6 +8,7 @@ TherapyRoutes.post("/",createTherapySession)
 TherapyRoutes.post("/context",getContextController)
 TherapyRoutes.patch("/update-context/:id",updateTherapyContextController)
 TherapyRoutes.delete("/:id",deleteTherapySession)
+TherapyRoutes.get("/get-summary/:id",getTherapySessionSummaryController)
 
 
 module.exports = TherapyRoutes

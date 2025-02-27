@@ -13,6 +13,10 @@ const ChatHistorySchema = new mongoose.Schema({
 },
 );
 const TherapySessionSchema = new mongoose.Schema({
+    Title: {
+        type: String,
+        required: true
+    },
     UserProblem: {
         type: String,
         required: true
