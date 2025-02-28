@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import MicOnIcon from "../assets/mic-on-icon.svg";
 import MicOffIcon from "../assets/mic-off-icon.svg";
 import sendIcon from "../assets/send-icon.svg";
@@ -18,6 +18,7 @@ import { LoginContext } from "../Context/LoginContext";
 const Chatbot = () => {
   const [isMicOn, setIsMicOn] = useState(true);
   const [userInput, setUserInput] = useState("");
+  const [isChatUpdated, setIsChatUpdated] = useState(false);
   const { currSession, setCurrSession } = useContext(SessionContext);
   const { currUser, setCurrUser } = useContext(LoginContext);
 
@@ -43,6 +44,10 @@ const Chatbot = () => {
     );
   }
 
+  useEffect(() => {
+    updateChatNew().then(() => {}).catch((error) => {console.log(error)});
+  }, [isChatUpdated]);
+
   async function updateChatSession(sessionId, newChatHistory) {
     return axios.patch(
       `${
@@ -54,8 +59,24 @@ const Chatbot = () => {
     );
   }
 
+  async function updateChatNew() {
+    try {
+      const res = await updateChatSession(currSession._id, chatHistory);
+      console.log("currSession._id:", currSession._id);
+
+      const updatedSession = res.data.updatedTherapySession;
+      console.log("updatedSession:", updatedSession);
+
+      setCurrSession(updatedSession);
+      localStorage.setItem("currSession", JSON.stringify(updatedSession));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function getResponse() {
     try {
+      setIsChatUpdated(false);
       console.log({
         input: userInput,
         context: currSession.UserSolution,
@@ -71,15 +92,7 @@ const Chatbot = () => {
 
       const newChatHistory = response.data.chatInfo.chatHistory;
       setChatHistory(newChatHistory);
-
-      const res = await updateChatSession(currSession._id, newChatHistory);
-      console.log("currSession._id:", currSession._id);
-
-      const updatedSession = res.data.updatedTherapySession;
-      console.log("updatedSession:", updatedSession);
-
-      setCurrSession(updatedSession);
-      localStorage.setItem("currSession", JSON.stringify(updatedSession));
+      setIsChatUpdated(true);
     } catch (error) {
       console.error("Error during chat request:", error);
       if (error.response) {
