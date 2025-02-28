@@ -15,7 +15,8 @@ import {
 } from "@langchain/core/messages";
 import { z } from "zod";
 import { tool } from "@langchain/core/tools";
-
+import * as dotenv from "dotenv";
+dotenv.config();
 export const doChat = async (input,context,chatHistory) => {
   const llm = new ChatOpenAI({
     model: "gpt-4o-mini",
@@ -35,6 +36,8 @@ export const doChat = async (input,context,chatHistory) => {
 
   const allSplits = await splitter.splitDocuments(context);
   await vectorStore.addDocuments(allSplits);
+
+  const graph = new StateGraph(MessagesAnnotation);
 
   const retrieveSchema = z.object({ query: z.string() });
 
@@ -105,7 +108,7 @@ export const doChat = async (input,context,chatHistory) => {
 
     // Run
     const response = await llm.invoke(prompt);
-    return { messages: [...chatHistory,response] };
+    return { messages: [response] };
   }
 
   const graphBuilder = new StateGraph(MessagesAnnotation)
@@ -120,11 +123,14 @@ export const doChat = async (input,context,chatHistory) => {
     .addEdge("tools", "generate")
     .addEdge("generate", "__end__");
 
-  let checkpointer = new MemorySaver();
+  // let checkpointer = new MemorySaver();
 
-  const graphWithMemory = graphBuilder.compile({ checkpointer });
+  graph= graphBuilder.compile();
   let chatContent;
-  for await (const step of await graphWithMemory.stream(input, {
+  const usableInput = {
+    messages: [{role: "user",content: input}],
+  }
+  for await (const step of await graphWithMemory.stream(usableInput, {
     configurable: { thread_id: "abc123" },
     streamMode: "values",
   })) {
@@ -132,6 +138,8 @@ export const doChat = async (input,context,chatHistory) => {
     if (!lastMessage.name || lastMessage.name != "retrieve") {
       if (lastMessage.content.length > 0) {
         chatContent = lastMessage.content;
+        console.log(chatContent);
+        
         return {
             text: chatContent,
             chatHistory: [...chatHistory,
