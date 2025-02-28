@@ -124,7 +124,7 @@ const Chatbot = () => {
 
   return (
     <>
-      <div className="max-h-[90vh] overflow-y-scroll">
+      <div className="h-[90vh] overflow-y-scroll">
         <div className="">
           {chatHistory.map((chat, index) => (
             <div
