@@ -1,3 +1,4 @@
+const { doChat } = require("../AIModules/chatBot");
 const {
   getTherapyContext,
   updateTherapyContext,
@@ -209,6 +210,21 @@ const getTherapySessionSummaryController = async (req, res) => {
       .json({ message: "Unable to create session summary", error });
   }
 };
+const chatBotController = async (req,res) => {
+
+  try {
+    const response = await doChat(req.body.input,req.body.context,req.body.chatHistory)
+    console.log(response);
+    return res.status(201).json({
+      chatInfo: response
+    })
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({error})
+  }
+
+}
 
 module.exports = {
   getAllTherapySessions,
@@ -217,5 +233,6 @@ module.exports = {
   updateTherapyContextController,
   getContextController,
   deleteTherapySession,
-  getTherapySessionSummaryController
+  getTherapySessionSummaryController,
+  chatBotController
 };

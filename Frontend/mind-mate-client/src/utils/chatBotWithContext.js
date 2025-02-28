@@ -138,7 +138,6 @@ export const doChat = async (input,context,chatHistory) => {
     if (!lastMessage.name || lastMessage.name != "retrieve") {
       if (lastMessage.content.length > 0) {
         chatContent = lastMessage.content;
-        console.log(chatContent);
         
         return {
             text: chatContent,
@@ -151,3 +150,4 @@ export const doChat = async (input,context,chatHistory) => {
     }
   }
 };
+
