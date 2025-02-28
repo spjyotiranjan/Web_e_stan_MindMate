@@ -13,8 +13,8 @@ const UserMentalHealthValidationSchema = Joi.object({
 
   career: Joi.object({
     profession: Joi.string().default("Unemployed"),
-    stressLevel: Joi.string().valid("Low", "Moderate", "High").default("Moderate"),
-    jobSatisfaction: Joi.string().valid("Satisfied", "Neutral", "Dissatisfied").default("Neutral"),
+    stressLevel: Joi.string().default("Moderate"),
+    jobSatisfaction: Joi.string().default("Neutral"),
   }),
 
   triggers: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).default([]),
@@ -35,9 +35,9 @@ const UserMentalHealthValidationSchema = Joi.object({
 
   lifestyle: Joi.object({
     sleepHours: Joi.number().min(0).max(24).default(7),
-    dietQuality: Joi.string().valid("Poor", "Average", "Healthy").default("Average"),
-    exerciseFrequency: Joi.string().valid("Never", "Rarely", "Occasionally", "Regularly").default("Occasionally"),
-    substanceUse: Joi.string().valid("None", "Occasional", "Frequent").default("None"),
+    dietQuality: Joi.string().default("Average"),
+    exerciseFrequency: Joi.string().default("Occasionally"),
+    substanceUse: Joi.string().default("None"),
   }),
 
   therapeuticGoals: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).default([]),

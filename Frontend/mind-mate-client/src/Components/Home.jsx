@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import MainBg from "../assets/mainbg.png";
 import Navbar from "./ui/Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { LoginContext } from "../Context/LoginContext";
 
 const Home = () => {
+  const navigate = useNavigate()
+  const {currUser} = useContext(LoginContext);
   return (
-    <div className="h-screen" style={{ backgroundImage: `url(${MainBg})` }}>
+    <div className="h-screen" style={{ backgroundImage: `url(${MainBg})`, backgroundSize: "cover" }}>
       <div
         className="top-section"
         
@@ -22,7 +25,7 @@ const Home = () => {
               <p className="py-6 text-[#141414] max-w-lg text-center">
               Break the barriers to mental health support. MindMate AI provides a safe, judgment-free space where you can talk, reflect, and heal with an AI-powered virtual therapist.
               </p>
-              <Link to="/all-sessions" className="btn rounded-full w-32 bg-[#AF90D8] border-none text-white font-poppins">Start Now</Link>
+              <Link to={!currUser.UserDetails ? "/user-intake":"/all-sessions"} className="btn rounded-full w-32 bg-[#AF90D8] border-none text-white font-poppins">Start Now</Link>
 
             </div>
           </div>

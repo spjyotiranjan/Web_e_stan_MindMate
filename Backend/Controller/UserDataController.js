@@ -169,8 +169,8 @@ const updateUserWithInitialUserDetail = async(req,res)=>{
           return res.status(400).json({ message: "Invalid Username" });
         }
       // Process the validated data using the refinement function
-      const refinedData = await getRefinedUserDetail(value);
-      const updatedUser = await UserDataModel.findByIdAndUpdate(req.params.id,{UserDetails: refinedData})
+      const refinedData = await getRefinedUserDetail(req.body);
+      const updatedUser = await UserDataModel.findByIdAndUpdate(req.params.id,{UserDetails: refinedData},{new:true})
   
       return res.status(200).json({ success: true, refinedData, updatedUser });
   

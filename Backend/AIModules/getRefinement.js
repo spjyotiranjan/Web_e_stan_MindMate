@@ -28,6 +28,8 @@ const getRefinedUserDetail = async (rawInput) => {
 
     for (const key of keysToRefine) {
       const value = key.split(".").reduce((obj, prop) => obj?.[prop], rawInput);
+      console.log(value);
+      
 
       if (typeof value === "string" && value.trim() !== "") {
         const refinedArray = await getRefinedDataArray(value, key); // Pass key name
@@ -47,7 +49,8 @@ const getRefinedUserDetail = async (rawInput) => {
           }
         }
       }
-
+      console.log(refinedData);
+      
     return refinedData;
   } catch (error) {
     console.error("Error refining user details:", error);
@@ -88,8 +91,12 @@ const getRefinedDataArray = async (rawData, property) => {
       input: rawData,
       property,
     });
+    console.log(res);
+    
     return res;
   } catch (error) {
+    console.log(error);
+    
     return error;
   }
 };
@@ -114,6 +121,8 @@ const getRefinedData = async (rawData, property) => {
       input: rawData,
       property,
     });
+    console.log(res);
+    
     return res;
   } catch (error) {
     return error;
